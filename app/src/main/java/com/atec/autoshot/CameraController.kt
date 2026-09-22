@@ -85,10 +85,12 @@ class CameraController(
      */
     fun capture(
         imageCapture: ImageCapture,
+        targetRotation: Int,
         onCaptureStarted: () -> Unit,
         onSaved: (Uri?) -> Unit,
         onError: (ImageCaptureException) -> Unit,
     ) {
+        imageCapture.targetRotation = targetRotation
         val options = PhotoSaver.outputOptions(context, System.currentTimeMillis())
         val startedCallback = onCaptureStarted
         val savedCallback = onSaved

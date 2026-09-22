@@ -10,6 +10,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.os.SystemClock
+import android.view.OrientationEventListener
+import android.view.Surface
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -27,6 +29,16 @@ class CaptureActivity : ComponentActivity() {
     private val watchdog = Watchdog()
     private var cameraStarted = false
     private var feedback: Feedback? = null
+
+    /** 촬영 시점의 기기 방향. `OrientationEventListener`가 계속 갱신한다 (F-11). */
+    @Volatile private var surfaceRotation = Surface.ROTATION_0
+    private val orientationListener by lazy {
+        object : OrientationEventListener(this) {
+            override fun onOrientationChanged(orientation: Int) {
+                surfaceRotation = DeviceRotation.toSurfaceRotation(orientation)
+            }
+        }
+    }
 
     private val requestCameraPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -56,10 +68,27 @@ class CaptureActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (orientationListener.canDetectOrientation()) orientationListener.enable()
+    }
+
+    override fun onStop() {
+        orientationListener.disable()
+        super.onStop()
+    }
+
     override fun onDestroy() {
         watchdog.cancel()
         feedback?.release()
         super.onDestroy()
+    }
+
+    // singleTask라 촬영 중 아이콘을 다시 누르면 새 인스턴스 대신 이 인스턴스로 재진입한다.
+    // 이미 촬영이 진행 중이므로 무시한다 (F-09).
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        Log.i(TAG, "onNewIntent ignored (capture in progress)")
     }
 
     private fun openCamera() {
@@ -72,7 +101,7 @@ class CaptureActivity : ComponentActivity() {
             finishWithoutAnimation()
         }
         // 셔터음을 미리 로드해 촬영 순간 지연 없이 재생되게 한다.
-        feedback = Feedback(this)
+        feedback = Feedback(this, Settings.PLAY_SHUTTER_SOUND)
         val controller = CameraController(this, this)
         controller.open(
             onReady = { ready ->
@@ -96,6 +125,7 @@ class CaptureActivity : ComponentActivity() {
     private fun capture(controller: CameraController, ready: CameraController.Ready) {
         controller.capture(
             ready.imageCapture,
+            targetRotation = surfaceRotation,
             onCaptureStarted = {
                 Log.i(TAG, "shutter sinceLaunch=${SystemClock.uptimeMillis() - launchUptime}ms")
                 feedback?.shutter()
