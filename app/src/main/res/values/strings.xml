@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">AutoShot</string>
-    <string name="launch_ok">AutoShot 실행됨 (M0)</string>
+
+    <string name="permission_denied">카메라 권한이 없어 촬영할 수 없습니다. 다시 실행하면 권한을 요청합니다.</string>
+    <string name="permission_required_title">카메라 권한 필요</string>
+    <string name="permission_required_message">AutoShot은 사진을 찍기 위해 카메라 권한이 필요합니다. 설정 &gt; 권한 &gt; 카메라에서 허용해 주세요.</string>
+    <string name="open_settings">설정 열기</string>
+    <string name="close">닫기</string>
+
+    <string name="camera_open_failed">카메라를 열 수 없습니다. 다른 앱이 카메라를 사용 중인지 확인하세요.</string>
+    <!-- M1 진단용: %1$s 초점 결과, %2$d 실행부터 준비까지 ms, %3$s 해상도 -->
+    <string name="camera_ready">카메라 준비 완료 · %1$s · %2$dms · %3$s</string>
+    <string name="focus_ok">초점 성공</string>
+    <string name="focus_failed">초점 실패</string>
+    <string name="focus_timeout">초점 대기 시간 초과</string>
 </resources>
