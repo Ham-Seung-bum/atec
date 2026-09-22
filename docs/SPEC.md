@@ -1,10 +1,10 @@
-# AutoShot 개발사양서 (v0.1)
+# AutoShot 개발사양서 (v0.2)
 
 > 바탕화면 아이콘을 누르면 별도 조작 없이 사진 한 장을 자동으로 찍어 저장하는 Android 앱
 
 | 항목 | 내용 |
 |---|---|
-| 문서 버전 | v0.1 (초안) |
+| 문서 버전 | v0.2 (초안) — 미리보기 없는 촬영 방식으로 변경 |
 | 작성일 | 2026-09-22 |
 | 대상 기기 | Samsung Galaxy S23 Ultra (SM-S918N, 국내판 기준) |
 | 상태 | 사용자 확인 대기 (§12 미결 사항) |
@@ -14,7 +14,7 @@
 ## 1. 목표와 범위
 
 ### 1.1 목표
-사용자가 홈 화면(런처)의 **AutoShot 아이콘을 탭하면**, 셔터 버튼을 누르지 않아도 **후면 메인 카메라로 사진 1장이 자동 촬영되어 갤러리에 저장**되고 앱은 스스로 종료된다.
+사용자가 홈 화면(런처)의 **AutoShot 아이콘을 탭하면**, 셔터 버튼을 누르지 않아도 **후면 메인 카메라로 사진 1장이 자동 촬영되어 갤러리에 저장**되고 앱은 스스로 종료된다. 촬영 과정에서 **카메라 미리보기 화면은 표시하지 않으며**, 사용자에게는 홈 화면이 그대로 보인다.
 
 ### 1.2 범위 (v1.0)
 - 포함: 런처 아이콘 실행 → 자동 촬영 → 저장 → 종료, 최초 실행 시 권한 요청, 촬영 피드백(셔터음·진동·토스트)
@@ -37,11 +37,11 @@
 
 ```
 [홈 화면] 아이콘 탭
-   └─▶ [앱 실행] 카메라 권한 확인
+   └─▶ [투명 Activity 실행] 카메라 권한 확인   ※ 화면에는 홈 화면이 그대로 보임
           ├─ 권한 없음 ─▶ 권한 요청 다이얼로그 ─▶ 거부 시 안내 후 종료
           └─ 권한 있음
-               └─▶ 카메라 열기 + 미리보기 표시
-                     └─▶ AE/AF 안정화 대기 (최대 1.0초)
+               └─▶ 카메라 열기 (ImageCapture만 바인딩, 미리보기 없음)
+                     └─▶ AE/AF 안정화 대기 (기본 0.5초, 최대 1.0초)
                            └─▶ 자동 촬영 ─▶ 셔터음/진동
                                  └─▶ MediaStore 저장 ─▶ "저장됨" 토스트
                                        └─▶ 앱 종료 (홈 화면 복귀)
@@ -56,7 +56,8 @@
 | F-01 | 런처 아이콘 탭 시 추가 입력 없이 자동으로 1장 촬영 | 필수 |
 | F-02 | 최초 실행 시 `CAMERA` 권한 요청. 거부 시 사유 안내, "다시 묻지 않음" 상태면 앱 설정 화면 이동 버튼 제공 | 필수 |
 | F-03 | 기본 카메라: 후면 메인(광각) 렌즈 | 필수 |
-| F-04 | 촬영 전 AE(노출)/AF(초점) 수렴 대기. 타임아웃(1.0초) 초과 시 그대로 촬영 | 필수 |
+| F-04 | 미리보기 없이 촬영: 카메라 미리보기 화면을 표시하지 않고, 투명 Activity 위에서 촬영 | 필수 |
+| F-04a | 촬영 전 AE(노출)/AF(초점) 수렴 대기 (기본 0.5초, `FocusMeteringAction` 완료 또는 1.0초 타임아웃 중 먼저 오는 쪽) | 필수 |
 | F-05 | 저장 위치: `DCIM/AutoShot/`, 파일명 `AUTOSHOT_yyyyMMdd_HHmmss_SSS.jpg` | 필수 |
 | F-06 | 저장 후 갤러리 앱에서 즉시 보이도록 MediaStore 등록 | 필수 |
 | F-07 | 촬영 피드백: 셔터음(`MediaActionSound`) + 짧은 진동 + 토스트 | 필수 |
@@ -78,6 +79,7 @@
 | N-04 | 결과물 품질 | 흔들림·초점 이탈 없는 사진 | 육안 확인, 실내/실외/저조도 각 10장 |
 | N-05 | APK 크기 | ≤ 10MB | 빌드 산출물 확인 |
 | N-06 | 개인정보 | 네트워크 권한 없음, 외부 전송 없음 | Manifest 검사 |
+| N-07 | 화면 노출 | 아이콘 탭부터 종료까지 카메라 영상·앱 화면이 보이지 않음 (상태 표시줄 초록 점, 토스트 제외) | 화면 녹화로 확인 |
 
 > N-01/N-02 수치는 목표치이며 실측 전이다. S23 Ultra에서 CameraX 초기화 + 3A 수렴 시간을 1차 프로토타입에서 측정한 뒤 조정한다.
 
@@ -88,8 +90,8 @@
 | 영역 | 선택 | 선택 이유 |
 |---|---|---|
 | 언어 | Kotlin | Android 공식 권장 언어 |
-| 카메라 | **CameraX** (`camera-core`, `camera-camera2`, `camera-lifecycle`, `camera-view`) | Camera2 대비 코드량이 적고, 기기별 호환성 문제(Samsung 포함)를 라이브러리가 흡수. 자동 촬영 1장이라는 단순 요구에 충분 |
-| UI | Android View (`PreviewView` 1개) | 화면이 사실상 미리보기 하나뿐이라 Compose 도입 이득이 적음 |
+| 카메라 | **CameraX** (`camera-core`, `camera-camera2`, `camera-lifecycle`) | Camera2 대비 코드량이 적고, 기기별 호환성 문제(Samsung 포함)를 라이브러리가 흡수. 자동 촬영 1장이라는 단순 요구에 충분 |
+| UI | 없음 (투명 테마 Activity, 레이아웃 미사용) | 보이는 화면이 없으므로 View/Compose 모두 불필요. 권한 안내만 시스템 다이얼로그·토스트로 처리 |
 | 저장 | `MediaStore` API | API 29+에서 저장소 권한 없이 `DCIM/` 저장 가능 |
 | 빌드 | Gradle (Kotlin DSL) + Android Studio 최신 안정판 | |
 | 테스트 | JUnit4, AndroidX Test, Espresso(최소), 실기기 수동 테스트 | |
@@ -114,12 +116,13 @@ app/
 ```
 
 ### 7.1 촬영 흐름 상세
-1. `CaptureActivity.onCreate()` — 레이아웃에 `PreviewView`만 배치, 화면 켜짐 유지
+1. `CaptureActivity.onCreate()` — `setContentView` 호출 없음. 투명 테마(§7.3)로 화면에 아무것도 그리지 않음
 2. 권한 확인 → 없으면 `ActivityResultContracts.RequestPermission`
-3. `ProcessCameraProvider`로 `Preview` + `ImageCapture` 바인딩
-   - `ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY` 사용 (N-01 우선)
-   - 결과 화질이 부족하면 `MAXIMIZE_QUALITY`로 전환 후 지연 재측정
-4. 미리보기 스트림 시작 후 중앙 영역 `FocusMeteringAction`(AF+AE) 실행 → 완료 콜백 또는 1.0초 타임아웃
+3. `ProcessCameraProvider`로 **`ImageCapture`만** 바인딩 (`Preview` 미사용)
+   - `ImageCapture`만 바인딩하면 CameraX가 3A 계산용 내부 반복 스트림을 자동으로 붙이는 것으로 알려져 있음 → 미리보기 없이도 AE/AF 동작 (M1에서 실기기 확인)
+   - `ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY` 기본 사용: 촬영 전 precapture(AE/AF 트리거) 시퀀스를 수행해 미리보기 없는 환경의 노출 부족을 보완
+   - 지연이 N-01을 넘으면 `MINIMIZE_LATENCY`로 전환해 화질·지연 재비교
+4. 바인딩 직후 `CameraControl.startFocusAndMetering()`(중앙 영역, AF+AE) 실행 → 완료 콜백 또는 1.0초 타임아웃 (기본 최소 대기 0.5초)
 5. `takePicture(OutputFileOptions(MediaStore), ...)` 호출
 6. 성공 콜백 → 피드백 → `finishAndRemoveTask()`
 
@@ -135,7 +138,7 @@ app/
     android:launchMode="singleTask"
     android:excludeFromRecents="true"
     android:screenOrientation="portrait"
-    android:theme="@style/Theme.AutoShot.Fullscreen">
+    android:theme="@style/Theme.AutoShot.Invisible">
     <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
@@ -143,7 +146,23 @@ app/
 </activity>
 ```
 - `INTERNET` 권한은 넣지 않는다 (N-06).
-- 세로 고정은 v1.0 기본값. 가로 촬영이 필요하면 §12에서 결정.
+- `screenOrientation`은 투명 Activity에서 Android 8.0에 충돌 이슈가 있었으나 minSdk 29이므로 해당 없음. 단, 사진 방향은 `ImageCapture.targetRotation`을 기기 센서 방향(`OrientationEventListener`)으로 갱신해 결정한다 (F-11).
+- 세로 고정은 Activity 방향에만 적용되며, 보이는 화면이 없으므로 사용자에게 영향 없음.
+
+### 7.3 투명 테마
+```xml
+<style name="Theme.AutoShot.Invisible" parent="Theme.Material3.DayNight.NoActionBar">
+    <item name="android:windowIsTranslucent">true</item>
+    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowAnimationStyle">@null</item>
+    <item name="android:windowDisablePreview">true</item>
+    <item name="android:backgroundDimEnabled">false</item>
+</style>
+```
+- 목적: 앱 실행 시 흰 화면·스플래시·전환 애니메이션 없이 홈 화면이 그대로 보이게 함
+- Android 12+ 스플래시 화면은 투명 테마 Activity에서 생략되는 것으로 알고 있으나 **One UI에서 실기기 확인 필요** (TC-13)
+- `finishAndRemoveTask()` 직전 `overridePendingTransition(0, 0)`(API 34+는 `overrideActivityTransition`)으로 종료 애니메이션도 제거
 
 ---
 
@@ -151,10 +170,12 @@ app/
 
 | 제약 | 내용 | 대응 |
 |---|---|---|
-| 화면 없는 촬영 불가 | Android 11+에서는 백그라운드 앱의 카메라 접근이 차단되고, 포그라운드 서비스도 백그라운드에서 카메라용으로 새로 시작할 수 없다 | 아이콘 탭으로 Activity가 포그라운드에 올라온 상태에서만 촬영. 화면에 미리보기가 잠깐(약 1초) 보이는 것은 **정상 동작**으로 정의 |
+| 백그라운드 촬영 불가 | Android 11+에서는 백그라운드 앱의 카메라 접근이 차단되고, 포그라운드 서비스도 백그라운드에서 카메라용으로 새로 시작할 수 없다 | 아이콘 탭으로 **투명 Activity**가 포그라운드에 올라온 상태에서 촬영. 화면에 보이는 것은 없지만 OS상으로는 포그라운드이므로 허용됨 |
 | 카메라 사용 표시 | 카메라 사용 중 상태 표시줄에 초록 점(개인정보 표시)이 뜬다 | OS 기능이라 숨길 수 없음. 정상 동작 |
 | 셔터음 | 국내 판매 휴대폰은 촬영음이 나도록 하는 것이 관행/표준이다. Camera2/CameraX는 셔터음을 자동으로 내지 않는다 | `MediaActionSound.SHUTTER_CLICK`으로 항상 재생, 무음 옵션 제공하지 않음 |
-| 미리보기 없이 촬영 | `ImageCapture`만 바인딩해도 촬영은 가능하나 AE/AF 수렴이 불안정해 어두운/흐린 사진이 나올 수 있다 | `Preview`를 함께 바인딩해 3A를 안정화 |
+| 미리보기 없는 촬영 품질 | 3A가 수렴하기 전 첫 프레임에서 찍으면 어둡거나 초점이 안 맞을 수 있다. S23 Ultra에서 실제 차이는 미측정 | `MAXIMIZE_QUALITY` + 최소 0.5초 대기 + `FocusMeteringAction`. M1에서 `Preview` 바인딩 방식과 실내·저조도 비교(TC-14) 후, 부족하면 대기 시간 조정 |
+| 실행 순간 깜빡임 | 런처의 앱 실행 전환 효과가 짧게 보일 수 있음 | §7.3 투명 테마로 최소화. 완전 제거 여부는 TC-13에서 확인 |
+| 대안 검토 (미채택) | 포그라운드 서비스 촬영: 알림 표시 필수, Android 14+ `FOREGROUND_SERVICE_CAMERA` 권한 필요 → 오히려 눈에 띄는 요소 증가. 1×1 `PreviewView`: 편법이며 이득 없음 | 투명 Activity + `ImageCapture` 단독 방식 채택 |
 | 200MP 센서 | 서드파티 앱은 보통 픽셀 비닝된 12MP급 출력을 받는다 (추정, 실기기에서 `ImageCapture` 해상도 목록으로 확인 필요) | v1.0은 기본 해상도 사용. 고해상도 필요 시 별도 검토 |
 | 카메라 점유 | 삼성 카메라 앱 등 다른 앱이 카메라 사용 중이면 열기 실패 | F-10 오류 처리 |
 
@@ -189,6 +210,9 @@ app/
 | TC-10 | 콜드/웜 스타트 지연 측정 | N-01, N-02 충족 |
 | TC-11 | 저장 공간 부족 상태 | 오류 토스트, 크래시 없음 |
 | TC-12 | 무음/진동 모드 | 셔터음 재생 여부 확인 (국내 정책 확인용) |
+| TC-13 | 화면 녹화 켠 상태에서 아이콘 탭 | 카메라 영상·흰 화면·스플래시가 보이지 않음 (N-07) |
+| TC-14 | 같은 장면을 `ImageCapture` 단독 vs `Preview`+`ImageCapture`로 각 10장 (실내, 저조도) | 밝기·초점 차이가 육안상 없거나 허용 범위 |
+| TC-15 | 최초 실행 권한 요청 | 홈 화면 위에 시스템 권한 다이얼로그만 표시 |
 
 ---
 
@@ -197,9 +221,9 @@ app/
 | 단계 | 내용 | 산출물 | 예상 기간 |
 |---|---|---|---|
 | M0 | 프로젝트 생성, Gradle/버전 카탈로그, 빈 Activity 실기기 실행 | 설치 가능한 빈 APK | 0.5일 |
-| M1 | 권한 처리 + CameraX 미리보기 | 미리보기 표시 | 1일 |
+| M1 | 투명 Activity + 권한 처리 + `ImageCapture` 단독 바인딩, 3A 동작 검증(TC-14) | 화면 없이 카메라 열림 확인 | 1일 |
 | M2 | 자동 촬영 + MediaStore 저장 + 자동 종료 | **핵심 기능 동작 APK** | 1일 |
-| M3 | 3A 대기, 피드백, 중복 실행 방지, 오류 처리 | F-01~F-11 충족 | 1일 |
+| M3 | 3A 대기 튜닝, 피드백, 중복 실행 방지, 오류 처리 | F-01~F-11 충족 | 1일 |
 | M4 | 테스트 작성 및 실기기 수동 테스트, 지연 튜닝 | 테스트 결과표 | 1일 |
 | M5 | 아이콘/이름 정리, 릴리스 서명 APK | release APK | 0.5일 |
 
@@ -221,7 +245,7 @@ app/
 |---|---|---|
 | Q1 | 촬영 후 동작: 바로 종료 vs 결과 사진 잠깐 표시 | 바로 종료 |
 | Q2 | 카메라: 후면 vs 전면 | 후면 메인 |
-| Q3 | 미리보기가 약 1초 보이는 것 허용 여부 (완전히 화면 없이 촬영은 OS 제약상 불가) | 허용 |
+| Q3 | ~~미리보기 표시 여부~~ | **확정: 미리보기 없음** (v0.2) |
 | Q4 | 플래시 | 자동(AUTO) |
 | Q5 | 화면 방향 | 세로 고정 |
 | Q6 | 배포 방식: 개인 사용(APK 직접 설치) vs Play 스토어 | 개인 사용 |
