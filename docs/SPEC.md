@@ -123,7 +123,7 @@ app/
    - `ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY` 기본 사용: 촬영 전 precapture(AE/AF 트리거) 시퀀스를 수행해 미리보기 없는 환경의 노출 부족을 보완
    - 지연이 N-01을 넘으면 `MINIMIZE_LATENCY`로 전환해 화질·지연 재비교
 4. `CameraInfo.cameraState`가 `OPEN`이 되면 `CameraControl.startFocusAndMetering()`(중앙 영역, AF+AE) 실행 → 완료 콜백 또는 1.0초 타임아웃 (기본 최소 대기 0.5초)
-   - M1 실기기 결과: 바인딩 직후 바로 메터링을 요청하면 세션이 열리기 전이라 결과가 오지 않았다 ("초점 대기 시간 초과"). 그래서 OPEN을 기다리도록 변경
+   - M1 실기기에서 "초점 대기 시간 초과"가 표시됨. 원인은 바인딩 직후 세션이 열리기 전에 메터링을 요청했기 때문으로 **추정**(M1 토스트는 타임아웃과 요청 실패를 구분하지 못했음). OPEN을 기다리도록 변경하고, M2부터 결과를 `FocusResult`로 구분해 로그로 확인
    - `cameraState`에 오류(다른 앱이 카메라 사용 중 등)가 보고되면 CameraX의 무기한 재시도를 기다리지 않고 즉시 실패 처리 (F-10)
 5. `takePicture(OutputFileOptions(MediaStore), ...)` 호출
 6. 성공 콜백 → 피드백 → `finishAndRemoveTask()`
