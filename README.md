@@ -22,6 +22,14 @@ GitHub Actions(`Android CI`)가 push마다 debug APK를 빌드해 `autoshot-debu
 2. `설정 > 개발자 옵션 > USB 디버깅` ON, PC 연결 후 "USB 디버깅 허용"
 3. `adb install -r app-debug.apk` 또는 `./gradlew installDebug`
 
+### "앱이 설치되지 않음"이 뜰 때
+
+1. 기존 AutoShot을 먼저 삭제하고 다시 설치한다. 서명이 다른 이전 APK가 남아 있으면 업데이트가 거부된다.
+   (`a1b2c3d` 이전 빌드는 CI마다 debug 키가 달랐다. 이후 빌드는 `app/debug.keystore`로 서명이 고정되어 삭제 없이 업데이트된다.)
+2. 다운로드한 `autoshot-debug-apk.zip`의 압축을 풀고 안의 `app-debug.apk`를 설치한다.
+3. `설정 > 보안 및 개인정보 보호 > 자동 차단`이 켜져 있으면 외부 APK 설치가 막힌다. 설치하는 동안 끈다.
+4. 그래도 안 되면 PC에서 `adb install -r app-debug.apk`를 실행해 `INSTALL_FAILED_…` 오류 코드를 확인한다.
+
 ## M0 확인 항목
 
 - [ ] 홈 화면에 AutoShot 아이콘이 생긴다

@@ -17,7 +17,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        // CI 러너마다 새 debug 키가 생성되면 서명이 달라져 기기에서 업데이트 설치가 실패한다
+        // ("앱이 설치되지 않음"). 저장소에 고정한 공용 debug 키로 항상 같은 서명을 쓴다.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
