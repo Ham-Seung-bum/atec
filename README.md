@@ -3,7 +3,7 @@
 홈 화면 아이콘을 탭하면 미리보기 없이 사진 1장을 자동 촬영하는 Android 앱. 대상 기기: Galaxy S23 Ultra.
 
 - 사양서: [docs/SPEC.md](docs/SPEC.md)
-- 진행 단계: **M1** (카메라 권한, 미리보기 없이 카메라 열기, AE/AF 대기). 촬영·저장은 M2
+- 진행 단계: **M2** (자동 촬영 + `DCIM/AutoShot/` 저장 + 자동 종료). 중복 실행 방지·회전 보정 등은 M3
 
 ## 빌드
 
@@ -56,3 +56,20 @@ adb logcat -s AutoShot
 ```
 
 콜드 스타트는 `adb shell am force-stop com.atec.autoshot` 후 아이콘 탭으로 측정한다.
+
+## M2 확인 항목
+
+아이콘 탭 → 셔터음·진동 → `사진 저장됨 · 초점 성공 · 1234ms` 토스트 → 종료.
+
+- [ ] 갤러리 앱에 `AutoShot` 앨범이 생기고 사진이 저장된다 (TC-08)
+- [ ] 파일명이 `AUTOSHOT_yyyyMMdd_HHmmss_SSS.jpg` 형식이다
+- [ ] 아이콘 10회 탭 → 10장 저장 (TC-04)
+- [ ] 토스트의 초점 결과가 "초점 성공"인지 확인 (M1의 "초점 대기 시간 초과" 수정 확인)
+- [ ] 저조도(실내 소등)에서 노출이 확보된다 (TC-07)
+
+```bash
+adb logcat -s AutoShot
+# camera ready sinceLaunch=…ms open=…ms metering=…ms focus=FOCUSED resolution=…
+# shutter sinceLaunch=…ms      ← N-01/N-02 측정값 (아이콘 탭 → 셔터)
+# saved sinceLaunch=…ms uri=content://media/…
+```

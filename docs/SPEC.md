@@ -57,7 +57,7 @@
 | F-02 | 최초 실행 시 `CAMERA` 권한 요청. 거부 시 사유 안내, "다시 묻지 않음" 상태면 앱 설정 화면 이동 버튼 제공 | 필수 |
 | F-03 | 기본 카메라: 후면 메인(광각) 렌즈 | 필수 |
 | F-04 | 미리보기 없이 촬영: 카메라 미리보기 화면을 표시하지 않고, 투명 Activity 위에서 촬영 | 필수 |
-| F-04a | 촬영 전 AE(노출)/AF(초점) 수렴 대기 (기본 0.5초, `FocusMeteringAction` 완료 또는 1.0초 타임아웃 중 먼저 오는 쪽) | 필수 |
+| F-04a | 카메라가 OPEN 상태가 된 뒤 AE(노출)/AF(초점) 수렴 대기 (최소 0.5초, `FocusMeteringAction` 완료 또는 1.0초 타임아웃 중 먼저 오는 쪽) | 필수 |
 | F-05 | 저장 위치: `DCIM/AutoShot/`, 파일명 `AUTOSHOT_yyyyMMdd_HHmmss_SSS.jpg` | 필수 |
 | F-06 | 저장 후 갤러리 앱에서 즉시 보이도록 MediaStore 등록 | 필수 |
 | F-07 | 촬영 피드백: 셔터음(`MediaActionSound`) + 짧은 진동 + 토스트 | 필수 |
@@ -122,7 +122,9 @@ app/
    - `ImageCapture`만 바인딩하면 CameraX가 3A 계산용 내부 반복 스트림을 자동으로 붙이는 것으로 알려져 있음 → 미리보기 없이도 AE/AF 동작 (M1에서 실기기 확인)
    - `ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY` 기본 사용: 촬영 전 precapture(AE/AF 트리거) 시퀀스를 수행해 미리보기 없는 환경의 노출 부족을 보완
    - 지연이 N-01을 넘으면 `MINIMIZE_LATENCY`로 전환해 화질·지연 재비교
-4. 바인딩 직후 `CameraControl.startFocusAndMetering()`(중앙 영역, AF+AE) 실행 → 완료 콜백 또는 1.0초 타임아웃 (기본 최소 대기 0.5초)
+4. `CameraInfo.cameraState`가 `OPEN`이 되면 `CameraControl.startFocusAndMetering()`(중앙 영역, AF+AE) 실행 → 완료 콜백 또는 1.0초 타임아웃 (기본 최소 대기 0.5초)
+   - M1 실기기 결과: 바인딩 직후 바로 메터링을 요청하면 세션이 열리기 전이라 결과가 오지 않았다 ("초점 대기 시간 초과"). 그래서 OPEN을 기다리도록 변경
+   - `cameraState`에 오류(다른 앱이 카메라 사용 중 등)가 보고되면 CameraX의 무기한 재시도를 기다리지 않고 즉시 실패 처리 (F-10)
 5. `takePicture(OutputFileOptions(MediaStore), ...)` 호출
 6. 성공 콜백 → 피드백 → `finishAndRemoveTask()`
 
@@ -151,7 +153,7 @@ app/
 
 ### 7.3 투명 테마
 ```xml
-<style name="Theme.AutoShot.Invisible" parent="Theme.Material3.DayNight.NoActionBar">
+<style name="Theme.AutoShot.Invisible" parent="@android:style/Theme.Translucent.NoTitleBar">
     <item name="android:windowIsTranslucent">true</item>
     <item name="android:windowBackground">@android:color/transparent</item>
     <item name="android:windowNoTitle">true</item>

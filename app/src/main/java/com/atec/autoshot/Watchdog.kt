@@ -17,6 +17,7 @@ class Watchdog {
     }
 
     companion object {
-        const val TIMEOUT_MS = 5_000L
+        // 카메라 열기 + 메터링(최대 1초) + 고화질 촬영·저장까지 포함한 상한.
+        const val TIMEOUT_MS = 8_000L
     }
 }

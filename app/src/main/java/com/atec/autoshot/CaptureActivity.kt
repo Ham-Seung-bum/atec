@@ -19,14 +19,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 /**
  * 앱 진입점. 화면을 그리지 않는 투명 Activity (SPEC §7.3).
  *
- * M1: 권한 확인 → 미리보기 없이 카메라 열기 → AE/AF 대기 → 측정값 토스트/로그 → 종료.
- * 촬영·저장은 M2에서 추가한다.
+ * 권한 확인 → 미리보기 없이 카메라 열기 → AE/AF 대기 → 촬영·저장 → 종료 (SPEC §3).
  */
 class CaptureActivity : ComponentActivity() {
 
     private val launchUptime = SystemClock.uptimeMillis()
     private val watchdog = Watchdog()
     private var cameraStarted = false
+    private var feedback: Feedback? = null
 
     private val requestCameraPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -58,6 +58,7 @@ class CaptureActivity : ComponentActivity() {
 
     override fun onDestroy() {
         watchdog.cancel()
+        feedback?.release()
         super.onDestroy()
     }
 
@@ -66,32 +67,22 @@ class CaptureActivity : ComponentActivity() {
         cameraStarted = true
         // 투명 Activity가 남아 있으면 홈 화면이 멈춘 것처럼 보이므로, 카메라가 응답하지 않아도 반드시 종료한다.
         watchdog.start {
-            Log.e(TAG, "camera watchdog fired after ${Watchdog.TIMEOUT_MS}ms")
+            Log.e(TAG, "watchdog fired after ${Watchdog.TIMEOUT_MS}ms")
             Toast.makeText(this, R.string.camera_open_failed, Toast.LENGTH_LONG).show()
             finishWithoutAnimation()
         }
-        CameraController(this, this).open(
+        // 셔터음을 미리 로드해 촬영 순간 지연 없이 재생되게 한다.
+        feedback = Feedback(this)
+        val controller = CameraController(this, this)
+        controller.open(
             onReady = { ready ->
-                watchdog.cancel()
-                val sinceLaunch = SystemClock.uptimeMillis() - launchUptime
                 Log.i(
                     TAG,
-                    "camera ready sinceLaunch=${sinceLaunch}ms bind=${ready.bindMs}ms " +
-                        "metering=${ready.meteringMs}ms focus=${ready.focusSuccessful} " +
+                    "camera ready sinceLaunch=${SystemClock.uptimeMillis() - launchUptime}ms " +
+                        "open=${ready.openMs}ms metering=${ready.meteringMs}ms focus=${ready.focus} " +
                         "resolution=${ready.resolution}",
                 )
-                val focus = when (ready.focusSuccessful) {
-                    true -> getString(R.string.focus_ok)
-                    false -> getString(R.string.focus_failed)
-                    null -> getString(R.string.focus_timeout)
-                }
-                val resolution = ready.resolution?.let { "${it.width}x${it.height}" } ?: "?"
-                Toast.makeText(
-                    this,
-                    getString(R.string.camera_ready, focus, sinceLaunch, resolution),
-                    Toast.LENGTH_LONG,
-                ).show()
-                finishWithoutAnimation()
+                capture(controller, ready)
             },
             onError = { error ->
                 watchdog.cancel()
@@ -101,6 +92,41 @@ class CaptureActivity : ComponentActivity() {
             },
         )
     }
+
+    private fun capture(controller: CameraController, ready: CameraController.Ready) {
+        controller.capture(
+            ready.imageCapture,
+            onCaptureStarted = {
+                Log.i(TAG, "shutter sinceLaunch=${SystemClock.uptimeMillis() - launchUptime}ms")
+                feedback?.shutter()
+            },
+            onSaved = { uri ->
+                watchdog.cancel()
+                val sinceLaunch = SystemClock.uptimeMillis() - launchUptime
+                Log.i(TAG, "saved sinceLaunch=${sinceLaunch}ms uri=$uri")
+                Toast.makeText(
+                    this,
+                    getString(R.string.photo_saved, getString(ready.focus.labelRes), sinceLaunch),
+                    Toast.LENGTH_SHORT,
+                ).show()
+                finishWithoutAnimation()
+            },
+            onError = { error ->
+                watchdog.cancel()
+                Log.e(TAG, "capture failed code=${error.imageCaptureError}", error)
+                Toast.makeText(this, R.string.capture_failed, Toast.LENGTH_LONG).show()
+                finishWithoutAnimation()
+            },
+        )
+    }
+
+    private val FocusResult.labelRes: Int
+        get() = when (this) {
+            FocusResult.FOCUSED -> R.string.focus_ok
+            FocusResult.NOT_FOCUSED -> R.string.focus_failed
+            FocusResult.TIMEOUT -> R.string.focus_timeout
+            FocusResult.ERROR -> R.string.focus_error
+        }
 
     private fun showOpenSettingsDialog() {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)

@@ -8,9 +8,11 @@
     <string name="close">닫기</string>
 
     <string name="camera_open_failed">카메라를 열 수 없습니다. 다른 앱이 카메라를 사용 중인지 확인하세요.</string>
-    <!-- M1 진단용: %1$s 초점 결과, %2$d 실행부터 준비까지 ms, %3$s 해상도 -->
-    <string name="camera_ready">카메라 준비 완료 · %1$s · %2$dms · %3$s</string>
+    <string name="capture_failed">사진을 저장하지 못했습니다. 저장 공간을 확인하세요.</string>
+    <!-- %1$s 초점 결과, %2$d 실행부터 저장까지 ms (개발 중 확인용) -->
+    <string name="photo_saved">사진 저장됨 · %1$s · %2$dms</string>
     <string name="focus_ok">초점 성공</string>
     <string name="focus_failed">초점 실패</string>
     <string name="focus_timeout">초점 대기 시간 초과</string>
+    <string name="focus_error">초점 요청 실패</string>
 </resources>
