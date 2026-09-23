@@ -49,7 +49,7 @@ class CameraController(
         providerFuture.addListener({
             val imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
+                .setFlashMode(ImageCapture.FLASH_MODE_OFF)
                 .build()
             val camera = try {
                 val provider = providerFuture.get()

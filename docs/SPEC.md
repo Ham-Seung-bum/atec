@@ -43,7 +43,7 @@
                └─▶ 카메라 열기 (ImageCapture만 바인딩, 미리보기 없음)
                      └─▶ AE/AF 안정화 대기 (기본 0.5초, 최대 1.0초)
                            └─▶ 자동 촬영 ─▶ 셔터음/진동
-                                 └─▶ MediaStore 저장 ─▶ "저장됨" 토스트
+                                 └─▶ MediaStore 저장 ─▶ "저장됨" 토스트 (사진 문구 없음)
                                        └─▶ 앱 종료 (홈 화면 복귀)
 ```
 
@@ -121,6 +121,7 @@ app/
 3. `ProcessCameraProvider`로 **`ImageCapture`만** 바인딩 (`Preview` 미사용)
    - `ImageCapture`만 바인딩하면 CameraX가 3A 계산용 내부 반복 스트림을 자동으로 붙이는 것으로 알려져 있음 → 미리보기 없이도 AE/AF 동작 (M1에서 실기기 확인)
    - `ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY` 기본 사용: 촬영 전 precapture(AE/AF 트리거) 시퀀스를 수행해 미리보기 없는 환경의 노출 부족을 보완
+   - `FLASH_MODE_OFF`: 플래시는 어떤 경우에도 켜지 않는다 (Q4)
    - 지연이 N-01을 넘으면 `MINIMIZE_LATENCY`로 전환해 화질·지연 재비교
 4. `CameraInfo.cameraState`가 `OPEN`이 되면 `CameraControl.startFocusAndMetering()`(중앙 영역, AF+AE) 실행 → 완료 콜백 또는 1.0초 타임아웃 (기본 최소 대기 0.5초)
    - M1 실기기에서 "초점 대기 시간 초과"가 표시됨. 원인은 바인딩 직후 세션이 열리기 전에 메터링을 요청했기 때문으로 **추정**(M1 토스트는 타임아웃과 요청 실패를 구분하지 못했음). OPEN을 기다리도록 변경하고, M2부터 결과를 `FocusResult`로 구분해 로그로 확인
@@ -248,7 +249,7 @@ app/
 | Q1 | 촬영 후 동작: 바로 종료 vs 결과 사진 잠깐 표시 | 바로 종료 |
 | Q2 | 카메라: 후면 vs 전면 | 후면 메인 |
 | Q3 | ~~미리보기 표시 여부~~ | **확정: 미리보기 없음** (v0.2) |
-| Q4 | 플래시 | 자동(AUTO) |
+| Q4 | 플래시 | **강제 OFF** (`FLASH_MODE_OFF`, 어떤 경우에도 켜지 않음) |
 | Q5 | 화면 방향 | 세로 고정 |
 | Q6 | 배포 방식: 개인 사용(APK 직접 설치) vs Play 스토어 | 개인 사용 |
-| Q7 | 앱 이름 | AutoShot |
+| Q7 | 앱 이름 | **버섯** (표시 이름). 패키지·내부 식별자는 `com.atec.autoshot` 유지 |

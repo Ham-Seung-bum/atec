@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AutoShot</string>
+    <string name="app_name">버섯</string>
 
     <string name="permission_denied">카메라 권한이 없어 촬영할 수 없습니다. 다시 실행하면 권한을 요청합니다.</string>
     <string name="permission_required_title">카메라 권한 필요</string>
@@ -10,7 +10,7 @@
     <string name="camera_open_failed">카메라를 열 수 없습니다. 다른 앱이 카메라를 사용 중인지 확인하세요.</string>
     <string name="capture_failed">사진을 저장하지 못했습니다. 저장 공간을 확인하세요.</string>
     <!-- %1$s 초점 결과, %2$d 실행부터 저장까지 ms (개발 중 확인용) -->
-    <string name="photo_saved">사진 저장됨 · %1$s · %2$dms</string>
+    <string name="photo_saved">저장됨 · %1$s · %2$dms</string>
     <string name="focus_ok">초점 성공</string>
     <string name="focus_failed">초점 실패</string>
     <string name="focus_timeout">초점 대기 시간 초과</string>

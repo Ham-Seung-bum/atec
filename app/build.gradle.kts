@@ -11,8 +11,8 @@ android {
         applicationId = "com.atec.autoshot"
         minSdk = 29
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.4.0-m3"
+        versionCode = 5
+        versionName = "0.5.0-m4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,4 +57,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.runner)
 }

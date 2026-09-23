@@ -3,7 +3,8 @@
 홈 화면 아이콘을 탭하면 미리보기 없이 사진 1장을 자동 촬영하는 Android 앱. 대상 기기: Galaxy S23 Ultra.
 
 - 사양서: [docs/SPEC.md](docs/SPEC.md)
-- 진행 단계: **M3** (중복 실행 방지, 회전 보정, 셔터음 옵션). 릴리스 정리는 M5
+- 진행 단계: **M4** (테스트 보강, 지연 측정). 릴리스 정리는 M5
+- 앱 표시 이름: **버섯** / 플래시: 강제 OFF / 셔터음: 기본 무음(실기기 확인됨)
 
 ## 빌드
 
@@ -82,3 +83,28 @@ adb logcat -s AutoShot
 - [ ] 저장 공간이 부족한 상태 → "사진을 저장하지 못했습니다" 토스트, 크래시 없음 (TC-11)
 
 > 셔터음을 켜려면 `AppSettings.PLAY_SHUTTER_SOUND = true`로 바꿔 다시 빌드한다.
+
+## M4 확인 항목
+
+- [ ] 홈 화면 아이콘 이름이 **버섯**으로 보인다
+- [ ] 촬영 완료 토스트에 "사진" 문구가 없다 (`저장됨 · …`)
+- [ ] 어두운 곳에서도 플래시가 켜지지 않는다
+- [ ] N-01/N-02 지연 측정: `adb logcat -s AutoShot`의 `shutter sinceLaunch` 10회 평균 (콜드/웜)
+
+### 지연 측정 스크립트
+
+```bash
+adb logcat -c
+for i in $(seq 1 10); do
+  adb shell am force-stop com.atec.autoshot     # 콜드 스타트. 웜은 이 줄 제거
+  adb shell monkey -p com.atec.autoshot -c android.intent.category.LAUNCHER 1 >/dev/null
+  sleep 3
+done
+adb logcat -d -s AutoShot | grep "shutter sinceLaunch"
+```
+
+계측 테스트(`assembleDebugAndroidTest`로 컴파일 검증, 실행은 기기 필요):
+
+```bash
+./gradlew connectedDebugAndroidTest    # 기기/에뮬레이터 연결 시
+```
