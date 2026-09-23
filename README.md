@@ -81,4 +81,4 @@ adb logcat -s AutoShot
 - [ ] 아이콘을 빠르게 2회 연속 탭 → 1장만 저장된다 (TC-05)
 - [ ] 저장 공간이 부족한 상태 → "사진을 저장하지 못했습니다" 토스트, 크래시 없음 (TC-11)
 
-> 셔터음을 켜려면 `Settings.PLAY_SHUTTER_SOUND = true`로 바꿔 다시 빌드한다.
+> 셔터음을 켜려면 `AppSettings.PLAY_SHUTTER_SOUND = true`로 바꿔 다시 빌드한다.

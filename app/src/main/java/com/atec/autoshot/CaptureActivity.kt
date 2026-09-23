@@ -101,7 +101,7 @@ class CaptureActivity : ComponentActivity() {
             finishWithoutAnimation()
         }
         // 셔터음을 미리 로드해 촬영 순간 지연 없이 재생되게 한다.
-        feedback = Feedback(this, Settings.PLAY_SHUTTER_SOUND)
+        feedback = Feedback(this, AppSettings.PLAY_SHUTTER_SOUND)
         val controller = CameraController(this, this)
         controller.open(
             onReady = { ready ->
