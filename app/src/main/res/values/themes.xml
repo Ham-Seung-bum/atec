@@ -1,0 +1,11 @@
+<resources>
+    <!-- 화면에 아무것도 그리지 않는 투명 테마 (SPEC §7.3) -->
+    <style name="Theme.AutoShot.Invisible" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+</resources>

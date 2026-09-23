@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 버섯 대 (크림색) -->
+    <path
+        android:fillColor="#F3E9D2"
+        android:pathData="M46,58 L62,58 L60,78 C60,83 56,86 54,86 C52,86 48,83 48,78 Z" />
+    <!-- 버섯 갓 (빨강) -->
+    <path
+        android:fillColor="#E23B32"
+        android:pathData="M25,61 C25,42 37,30 54,30 C71,30 83,42 83,61 C83,62.7 81.7,64 80,64 L28,64 C26.3,64 25,62.7 25,61 Z" />
+    <!-- 갓 위 흰 점 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M43,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M62,45 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M54,57 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M73,55 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+</vector>
