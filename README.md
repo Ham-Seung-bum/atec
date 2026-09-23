@@ -3,7 +3,7 @@
 홈 화면 아이콘을 탭하면 미리보기 없이 사진 1장을 자동 촬영하는 Android 앱. 대상 기기: Galaxy S23 Ultra.
 
 - 사양서: [docs/SPEC.md](docs/SPEC.md)
-- 진행 단계: **M4** (테스트 보강, 지연 측정). 릴리스 정리는 M5
+- 진행 단계: **M5 완료** (release 빌드 정리, 버섯 아이콘). versionName 1.0.0
 - 앱 표시 이름: **버섯** / 플래시: 강제 OFF / 셔터음: 기본 무음(실기기 확인됨)
 
 ## 빌드
@@ -107,4 +107,17 @@ adb logcat -d -s AutoShot | grep "shutter sinceLaunch"
 
 ```bash
 ./gradlew connectedDebugAndroidTest    # 기기/에뮬레이터 연결 시
+```
+
+## M5 (릴리스)
+
+- 앱 아이콘: 버섯 모양(빨간 갓 + 흰 점 + 크림색 대) 적응형 아이콘
+- `assembleRelease`로 서명된 release APK 생성. 개인 사용이라 공용 debug 키로 서명(Play 스토어 배포 시 전용 키로 교체)
+- release는 R8 축소를 끔: CameraX 콜백이 런타임에 잘못 제거될 위험 회피, 앱이 작아 크기 영향 없음
+- CI가 `autoshot-release-apk` 아티팩트로 release APK 업로드
+
+release APK는 debug와 동일하게 설치한다. 두 빌드의 서명 키가 같아 서로 덮어써 설치된다.
+
+```bash
+./gradlew assembleRelease   # app/build/outputs/apk/release/app-release.apk
 ```

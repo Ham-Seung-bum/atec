@@ -3,15 +3,17 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- 카메라 본체 -->
+    <!-- 버섯 대 (크림색) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M40,38 L46,32 L62,32 L68,38 L76,38 A4,4 0 0 1 80,42 L80,72 A4,4 0 0 1 76,76 L32,76 A4,4 0 0 1 28,72 L28,42 A4,4 0 0 1 32,38 Z" />
-    <!-- 렌즈 -->
+        android:fillColor="#F3E9D2"
+        android:pathData="M46,58 L62,58 L60,78 C60,83 56,86 54,86 C52,86 48,83 48,78 Z" />
+    <!-- 버섯 갓 (빨강) -->
     <path
-        android:fillColor="#1E1E1E"
-        android:pathData="M54,45 A12,12 0 1 1 53.99,45 Z" />
-    <path
-        android:fillColor="#FFC107"
-        android:pathData="M54,50 A7,7 0 1 1 53.99,50 Z" />
+        android:fillColor="#E23B32"
+        android:pathData="M25,61 C25,42 37,30 54,30 C71,30 83,42 83,61 C83,62.7 81.7,64 80,64 L28,64 C26.3,64 25,62.7 25,61 Z" />
+    <!-- 갓 위 흰 점 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M43,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M62,45 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M54,57 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M73,55 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
 </vector>

@@ -20,13 +20,20 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Build, lint, unit test
-        run: ./gradlew assembleDebug assembleDebugAndroidTest lintDebug testDebugUnitTest --stacktrace
+        run: ./gradlew assembleDebug assembleRelease assembleDebugAndroidTest lintDebug testDebugUnitTest --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
           name: autoshot-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: autoshot-release-apk
+          path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
       - name: Upload lint report
